@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Statistics Quiz</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --paper: #f7f5f0;
+    --card: #ffffff;
+    --rule: #d8d3c7;
+    --accent: #2f4f4f;
+    --accent-soft: #e7ede9;
+    --error: #b0413e;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.5;
+    padding: 32px 16px 80px;
+  }
+
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+
+  .subtitle {
+    color: #565f6a;
+    font-size: 15px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: var(--serif);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  input[type="text"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  button {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  button:hover:not(:disabled) { background: #24403f; }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .error-text {
+    color: var(--error);
+    font-family: var(--mono);
+    font-size: 13px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .field-row {
+    margin-bottom: 18px;
+  }
+
+  .question {
+    border-top: 1px solid var(--rule);
+    padding: 22px 0;
+  }
+
+  .question:first-of-type { border-top: none; padding-top: 0; }
+
+  .q-number {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  .q-text {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  .options label {
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-bottom: 4px;
+  }
+
+  .options label:hover { background: var(--accent-soft); }
+
+  .options input[type="radio"] { accent-color: var(--accent); }
+
+  #submitStatus {
+    font-family: var(--mono);
+    font-size: 13px;
+    margin-top: 14px;
+  }
+
+  #submitStatus.ok { color: var(--accent); }
+  #submitStatus.err { color: var(--error); }
+
+  .hidden { display: none; }
+
+  .bar-row {
+    margin-bottom: 14px;
+  }
+
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+
+  .bar-track {
+    background: var(--accent-soft);
+    border-radius: 3px;
+    height: 10px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    background: var(--accent);
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  .bar-section-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 22px 0 12px;
+  }
+
+  .bar-section-title:first-child { margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">STAT — QUIZ</div>
+  <h1>Statistics Quiz</h1>
+  <div class="subtitle">Enter the passcode provided by your instructor to begin.</div>
+
+  <!-- PASSCODE GATE -->
+  <div class="card" id="passcodeGate">
+    <div class="field-row">
+      <label for="passcodeInput">Passcode</label>
+      <input type="text" id="passcodeInput" autocomplete="off" />
+    </div>
+    <button id="passcodeSubmitBtn">Enter Quiz</button>
+    <p class="error-text" id="passcodeError">Incorrect passcode. Please try again.</p>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quizContainer" class="hidden">
+
+    <div class="card">
+      <div class="field-row">
+        <label for="studentName">Full Name</label>
+        <input type="text" id="studentName" autocomplete="name" />
+      </div>
+      <div class="field-row" style="margin-bottom:0;">
+        <label for="studentId">Student ID / Email</label>
+        <input type="text" id="studentId" autocomplete="email" />
+      </div>
+    </div>
+
+    <div class="card" id="questions">
+
+      <div class="question" data-qid="q1">
+        <div class="q-number">QUESTION 1 OF 5</div>
+        <div class="q-text">Which measure of central tendency is most affected by extreme outliers?</div>
+        <div class="options">
+          <label><input type="radio" name="q1" value="A" /> Median</label>
+          <label><input type="radio" name="q1" value="B" /> Mode</label>
+          <label><input type="radio" name="q1" value="C" /> Mean</label>
+          <label><input type="radio" name="q1" value="D" /> Range</label>
+        </div>
+      </div>
+
+      <div class="question" data-qid="q2">
+        <div class="q-number">QUESTION 2 OF 5</div>
+        <div class="q-text">In a standard normal distribution, approximately what percentage of values fall within 1 standard deviation of the mean?</div>
+        <div class="options">
+          <label><input type="radio" name="q2" value="A" /> 50%</label>
+          <label><input type="radio" name="q2" value="B" /> 68%</label>
+          <label><input type="radio" name="q2" value="C" /> 95%</label>
+          <label><input type="radio" name="q2" value="D" /> 99%</label>
+        </div>
+      </div>
+
+      <div class="question" data-qid="q3">
+        <div class="q-number">QUESTION 3 OF 5</div>
+        <div class="q-text">Which of the following is a requirement for using a two-sample t-test to compare means?</div>
+        <div class="options">
+          <label><input type="radio" name="q3" value="A" /> Both samples must be the same size</label>
+          <label><input type="radio" name="q3" value="B" /> The population variances must be known exactly</label>
+          <label><input type="radio" name="q3" value="C" /> Observations should be independent</label>
+          <label><input type="radio" name="q3" value="D" /> The sample size must exceed 100</label>
+        </div>
+      </div>
+
+      <div class="question" data-qid="q4">
+        <div class="q-number">QUESTION 4 OF 5 &middot; FILL IN THE BLANK</div>
+        <div class="q-text">The value that separates the highest 25% of a dataset from the rest is called the ______ quartile.</div>
+        <input type="text" class="fill-blank" autocomplete="off" placeholder="Type your answer" />
+      </div>
+
+      <div class="question" data-qid="q5">
+        <div class="q-number">QUESTION 5 OF 5 &middot; FILL IN THE BLANK</div>
+        <div class="q-text">A p-value less than the significance level (&alpha;) leads to ______ the null hypothesis.</div>
+        <input type="text" class="fill-blank" autocomplete="off" placeholder="Type your answer" />
+      </div>
+
+    </div>
+
+    <button id="submitQuizBtn">Submit Quiz</button>
+    <p id="submitStatus"></p>
+
+  </div>
+
+  <!-- DASHBOARD (shown instead of the quiz, once the due date has passed) -->
+  <div id="dashboardContainer" class="hidden">
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:12px;">RESULTS — CLASS SUMMARY</div>
+      <p id="dashboardSummary" style="margin:0 0 18px;"></p>
+      <div id="dashboardBars"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ---- CONFIGURE THIS ----
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHSV6UI-SfqD4HaRtu9LHmTuF3RKHmxo6qVLufffQNcMYuDDeNN0DQOt76wQwKSIKXWw/exec';
+  // -------------------------
+
+  let verifiedPasscode = null;
+
+  const gate = document.getElementById('passcodeGate');
+  const quiz = document.getElementById('quizContainer');
+  const dashboard = document.getElementById('dashboardContainer');
+  const passcodeInput = document.getElementById('passcodeInput');
+  const passcodeBtn = document.getElementById('passcodeSubmitBtn');
+  const passcodeError = document.getElementById('passcodeError');
+
+  passcodeBtn.addEventListener('click', async () => {
+    const code = passcodeInput.value.trim();
+    if (!code) return;
+
+    passcodeBtn.disabled = true;
+    passcodeBtn.textContent = 'Checking...';
+    passcodeError.style.display = 'none';
+
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=checkPasscode&code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+
+      if (data.status === 'ok' && data.valid) {
+        verifiedPasscode = code;
+        gate.classList.add('hidden');
+        await routeToQuizOrDashboard(code);
+      } else {
+        passcodeError.style.display = 'block';
+      }
+    } catch (err) {
+      passcodeError.textContent = 'Could not verify passcode. Check your connection and try again.';
+      passcodeError.style.display = 'block';
+    } finally {
+      passcodeBtn.disabled = false;
+      passcodeBtn.textContent = 'Enter Quiz';
+    }
+  });
+
+  // Decide whether to show the quiz form or the results dashboard,
+  // based on whether the due date has passed (checked server-side).
+  async function routeToQuizOrDashboard(code) {
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=getDashboard&code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+
+      if (data.status === 'locked') {
+        // Due date hasn't passed yet — show the quiz as normal.
+        quiz.classList.remove('hidden');
+      } else if (data.status === 'ok') {
+        // Due date has passed — show results instead of the quiz form.
+        renderDashboard(data);
+        dashboard.classList.remove('hidden');
+      } else {
+        // Fall back to showing the quiz if something unexpected happened.
+        quiz.classList.remove('hidden');
+      }
+    } catch (err) {
+      // If the dashboard check fails for any reason, default to showing the quiz.
+      quiz.classList.remove('hidden');
+    }
+  }
+
+  function renderDashboard(data) {
+    const summaryEl = document.getElementById('dashboardSummary');
+    const barsEl = document.getElementById('dashboardBars');
+
+    if (!data.submissions) {
+      summaryEl.textContent = 'No submissions were recorded for this quiz.';
+      return;
+    }
+
+    summaryEl.innerHTML =
+      `Submissions: <strong>${data.submissions}</strong> &nbsp;&middot;&nbsp; ` +
+      `Average: <strong>${data.mean} / ${data.total}</strong> &nbsp;&middot;&nbsp; ` +
+      `High: <strong>${data.max}</strong> &nbsp;&middot;&nbsp; Low: <strong>${data.min}</strong>`;
+
+    let html = '';
+
+    // Per-question accuracy
+    html += '<div class="bar-section-title">Per-question accuracy</div>';
+    Object.keys(data.perQuestionPct).forEach(q => {
+      const pct = data.perQuestionPct[q];
+      html += `
+        <div class="bar-row">
+          <div class="bar-label"><span>${q.toUpperCase()}</span><span>${pct}% correct</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+        </div>`;
+    });
+
+    // Score distribution
+    html += '<div class="bar-section-title">Score distribution</div>';
+    const maxCount = Math.max(...Object.values(data.distribution));
+    Object.keys(data.distribution)
+      .sort((a, b) => Number(b) - Number(a))
+      .forEach(score => {
+        const count = data.distribution[score];
+        const widthPct = Math.round((count / maxCount) * 100);
+        html += `
+          <div class="bar-row">
+            <div class="bar-label"><span>${score} / ${data.total}</span><span>${count} student${count === 1 ? '' : 's'}</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${widthPct}%;"></div></div>
+          </div>`;
+      });
+
+    barsEl.innerHTML = html;
+  }
+
+  passcodeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') passcodeBtn.click();
+  });
+
+  const submitBtn = document.getElementById('submitQuizBtn');
+  const statusEl = document.getElementById('submitStatus');
+
+  submitBtn.addEventListener('click', async () => {
+    const studentName = document.getElementById('studentName').value.trim();
+    const studentId = document.getElementById('studentId').value.trim();
+
+    if (!studentName || !studentId) {
+      statusEl.textContent = 'Please enter your name and student ID before submitting.';
+      statusEl.className = 'err';
+      return;
+    }
+
+    const answers = {};
+    document.querySelectorAll('#questions .question').forEach(qEl => {
+      const qid = qEl.dataset.qid;
+      const radio = qEl.querySelector('input[type="radio"]:checked');
+      const fillBlank = qEl.querySelector('input.fill-blank');
+      if (radio) {
+        answers[qid] = radio.value;
+      } else if (fillBlank) {
+        answers[qid] = fillBlank.value.trim();
+      } else {
+        answers[qid] = null;
+      }
+    });
+
+    const unanswered = Object.values(answers).filter(v => !v).length;
+    if (unanswered > 0) {
+      statusEl.textContent = `Please answer all questions (${unanswered} remaining).`;
+      statusEl.className = 'err';
+      return;
+    }
+
+    const payload = {
+      action: 'submitQuiz',
+      passcode: verifiedPasscode,
+      studentName,
+      studentId,
+      answers
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    statusEl.textContent = '';
+    statusEl.className = '';
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (data.status === 'ok') {
+        statusEl.textContent = 'Submitted successfully. You may close this page.';
+        statusEl.className = 'ok';
+        submitBtn.disabled = true;
+      } else {
+        statusEl.textContent = data.message || 'Something went wrong.';
+        statusEl.className = 'err';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Quiz';
+      }
+    } catch (err) {
+      statusEl.textContent = 'Submission failed. Check your connection and try again.';
+      statusEl.className = 'err';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Quiz';
+    }
+  });
+</script>
+</body>
+</html>
